@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Chat test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; }
+    #log { border: 1px solid #ccc; padding: .75rem; height: 320px; overflow-y: auto;
+           border-radius: 6px; background: #fafafa; }
+    .msg   { margin: .25rem 0; }
+    .sys   { color: #666; font-style: italic; font-size: .9em; }
+    .me    { font-weight: 600; }
+    .row   { display: flex; gap: .5rem; margin-top: .75rem; }
+    input, button { padding: .5rem; font-size: 1rem; }
+    #typing { color: #999; height: 1.2em; font-size: .85em; margin-top: .25rem; }
+  </style>
+</head>
+<body>
+  <h1>Chat test</h1>
+
+  <div class="row">
+    <input id="username" placeholder="username" value="ana" />
+    <input id="room" placeholder="room" value="general" />
+    <button id="joinBtn">Entrar</button>
+  </div>
+
+  <div id="typing"></div>
+  <div id="log"></div>
+
+  <div class="row">
+    <input id="msg" placeholder="mensaje…" style="flex:1" disabled />
+    <button id="sendBtn" disabled>Enviar</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const logEl    = document.getElementById('log');
+    const typingEl = document.getElementById('typing');
+    const msgEl    = document.getElementById('msg');
+    const sendBtn  = document.getElementById('sendBtn');
+    const joinBtn  = document.getElementById('joinBtn');
+
+    // Por si pruebas apuntando a otro host:
+    const socket = io('http://localhost:3001', { withCredentials: true });
+
+    let joined = false;
+    const typingTimers = new Map();
+    let myTypingSent = false;
+    let myTypingTimeout = null;
+
+    function log(text, cls = '') {
+      const div = document.createElement('div');
+      div.className = `msg ${cls}`;
+      div.textContent = text;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    socket.on('connect', () => log(`[socket] conectado id=${socket.id}`, 'sys'));
+    socket.on('disconnect', (r) => log(`[socket] desconectado (${r})`, 'sys'));
+
+    joinBtn.onclick = () => {
+      const username = document.getElementById('username').value.trim();
+      const room     = document.getElementById('room').value.trim();
+      socket.emit('join', { username, room }, (res) => {
+        if (!res.ok) return log(`[join error] ${res.error}`, 'sys');
+        joined = true;
+        msgEl.disabled = false;
+        sendBtn.disabled = false;
+        log(`[join ok] room=${res.room} users=[${res.users.join(', ')}]`, 'sys');
+      });
+    };
+
+    function send() {
+      const text = msgEl.value.trim();
+      if (!text) return;
+      socket.emit('message', { text }, (res) => {
+        if (!res.ok) log(`[msg error] ${res.error}`, 'sys');
+      });
+      msgEl.value = '';
+      // cortar typing
+      socket.emit('typing:stop');
+      myTypingSent = false;
+      if (myTypingTimeout) clearTimeout(myTypingTimeout);
+    }
+    sendBtn.onclick = send;
+    msgEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+    msgEl.addEventListener('input', () => {
+      if (!joined) return;
+      if (!myTypingSent) {
+        socket.emit('typing:start');
+        myTypingSent = true;
+      }
+      if (myTypingTimeout) clearTimeout(myTypingTimeout);
+      myTypingTimeout = setTimeout(() => {
+        socket.emit('typing:stop');
+        myTypingSent = false;
+      }, 1500);
+    });
+
+    socket.on('message', (m) => {
+      const mine = m.from === socket.id;
+      log(`${m.username}: ${m.text}`, mine ? 'me' : '');
+    });
+
+    socket.on('system:message', (m) => log(m.text, 'sys'));
+
+    socket.on('users:update', ({ room, users }) => {
+      log(`[users:update] ${room} → ${users.join(', ')}`, 'sys');
+    });
+
+    socket.on('typing:start', ({ username }) => {
+      typingEl.textContent = `${username} está escribiendo…`;
+      if (typingTimers.has(username)) clearTimeout(typingTimers.get(username));
+      typingTimers.set(username, setTimeout(() => {
+        typingEl.textContent = '';
+        typingTimers.delete(username);
+      }, 2500));
+    });
+
+    socket.on('typing:stop', () => { typingEl.textContent = ''; });
+  </script>
+</body>
+</html>
