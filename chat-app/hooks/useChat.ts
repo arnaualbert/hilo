@@ -9,7 +9,7 @@ import { getSocket, disconnectSocket } from '@/lib/socket';
 export interface Message {
   username: string;
   text: string;
-  timestamp: string;
+  ts: string;
 }
 
 export interface TypingUser {
@@ -74,7 +74,7 @@ export function useChat(): UseChatReturn {
     const handleSystem = ({ text }: { text: string }) => {
       setMessages((prev) => [
         ...prev,
-        { username: 'system', text, timestamp: new Date().toISOString() },
+        { username: 'system', text, ts: new Date().toISOString() },
       ]);
     };
 

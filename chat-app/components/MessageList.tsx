@@ -51,7 +51,7 @@ export default function MessageList({ messages, currentUser }: MessageListProps)
                   isOwn ? 'text-blue-200' : 'text-gray-400'
                 }`}
               >
-                {new Date(msg.timestamp).toLocaleTimeString([], {
+                {new Date(msg.ts).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
