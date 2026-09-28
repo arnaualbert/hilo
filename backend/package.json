@@ -17,6 +17,7 @@
     "socket.io": "^4.8.4"
   },
   "devDependencies": {
+    "@prisma/dev": "^0.25.2",
     "nodemon": "^3.1.14"
   }
 }
