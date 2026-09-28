@@ -32,7 +32,7 @@ export default function JoinForm({ onJoin }: JoinFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Tu nombre de usuario"
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-black border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           autoFocus
           maxLength={20}
         />

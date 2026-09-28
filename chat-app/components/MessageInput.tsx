@@ -50,7 +50,7 @@ export default function MessageInput({
         onChange={handleChange}
         placeholder="Escribe un mensaje…"
         disabled={disabled}
-        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+        className="flex-1 text-black border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
         autoComplete="off"
       />
       <button
