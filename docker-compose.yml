@@ -1,13 +1,13 @@
 services:
   backend:
     build:
-      context: ./chat-backend
+      context: ./backend
       dockerfile: Dockerfile.dev
     container_name: chat-backend-dev
     ports:
       - "3001:3001"
     volumes:
-      - ./chat-backend:/app
+      - ./backend:/app
       - /app/node_modules        # volumen anónimo: aísla node_modules del host
     environment:
       - NODE_ENV=development
@@ -18,13 +18,13 @@ services:
 
   frontend:
     build:
-      context: ./chat-frontend
+      context: ./chat-app
       dockerfile: Dockerfile.dev
     container_name: chat-frontend-dev
     ports:
       - "3000:3000"
     volumes:
-      - ./chat-frontend:/app
+      - ./chat-app:/app
       - /app/node_modules
       - /app/.next               # opcional: cache de Next aislada del host
     environment:
