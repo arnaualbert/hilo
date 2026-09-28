@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./chat-backend
+      dockerfile: Dockerfile.dev
+    container_name: chat-backend-dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./chat-backend:/app
+      - /app/node_modules        # volumen anónimo: aísla node_modules del host
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - CORS_ORIGIN=http://localhost:3000
+    networks:
+      - chat-net
+
+  frontend:
+    build:
+      context: ./chat-frontend
+      dockerfile: Dockerfile.dev
+    container_name: chat-frontend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./chat-frontend:/app
+      - /app/node_modules
+      - /app/.next               # opcional: cache de Next aislada del host
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
+    networks:
+      - chat-net
+
+networks:
+  chat-net:
+    driver: bridge

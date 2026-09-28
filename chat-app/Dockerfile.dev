@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache bash curl
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+# Next.js en modo dev con polling por si el FS no propaga eventos
+ENV WATCHPACK_POLLING=true
+ENV CHOKIDAR_USEPOLLING=true
+
+CMD ["npm", "run", "dev"]

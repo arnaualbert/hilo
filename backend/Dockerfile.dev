@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+# Herramientas útiles para hot reload en Alpine
+RUN apk add --no-cache bash curl
+
+WORKDIR /app
+
+# Copiamos solo manifests primero para cachear capas
+COPY package*.json ./
+
+# Instalamos dependencias dentro de la imagen (luego el volumen anónimo las preserva)
+RUN npm install
+
+# Copiamos el resto (en dev esto lo "pisa" el bind mount, pero ayuda a tener imagen funcional)
+COPY . .
+
+EXPOSE 3001
+
+# nodemon escucha cambios en /app
+CMD ["npm", "run", "dev"]
